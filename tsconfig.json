@@ -1,0 +1,37 @@
+{
+  "compilerOptions": {
+    /* Language and environment */
+    "target": "ES2022",
+    "lib": ["ES2022", "DOM", "DOM.Iterable"],
+    "jsx": "react-jsx",
+    "useDefineForClassFields": true,
+
+    /* Modules — Vite bundles, so TS only type-checks */
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "moduleDetection": "force",
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "verbatimModuleSyntax": true,
+    "esModuleInterop": true,
+    "types": ["vite/client", "jest", "@testing-library/jest-dom"],
+
+    /* Interop with the existing JS/JSX sources */
+    "allowJs": true,
+    "checkJs": false,
+
+    /* Type-checking strictness */
+    "strict": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "noFallthroughCasesInSwitch": true,
+    "noImplicitOverride": true,
+    "forceConsistentCasingInFileNames": true,
+
+    /* Emit — Vite owns the build */
+    "noEmit": true,
+    "skipLibCheck": true
+  },
+  "include": ["src", "vite.config.js", "eslint.config.js"],
+  "exclude": ["node_modules", "dist"]
+}

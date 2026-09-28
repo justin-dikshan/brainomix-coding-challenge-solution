@@ -1,12 +1,9 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router'
-import Layout from './components/Layout'
+import Layout from './components/Layout/Layout'
 import ChartPage from './pages/ChartPage'
 import SettingsPage from './pages/SettingsPage'
 
-/**
- * Application shell with routes for the chart and settings pages.
- * @returns {JSX.Element}
- */
+/** `/` and anything we don't recognise both go to the chart. */
 export const Main = () => {
   return (
     <BrowserRouter>

@@ -8,6 +8,10 @@ const settingsSlice = createSlice({
   name: 'settings',
   initialState,
   reducers: {
+    /**
+     * Flips theme between light and dark.
+     * @param {{ theme: string }} state Current slice state.
+     */
     toggleTheme: (state) => {
       state.theme = state.theme === 'light' ? 'dark' : 'light'
     }

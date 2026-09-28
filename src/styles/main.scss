@@ -1,0 +1,40 @@
+:root {
+  /* surfaces */
+  --bg: #f8fafc; /* app background — very light slate */
+  --card-bg: #ffffff; /* cards float white on the tinted bg */
+  --navigation-bg: #ffffff; /* sidebar surface */
+  --border: #e2e8f0; /* subtle slate border */
+
+  /* text */
+  --text: #0f172a; /* near-black slate (not pure black) */
+  --text-muted: #64748b; /* secondary text, labels */
+
+  /* accent */
+  --primary: #2563eb; /* the one accent — links, active nav, buttons */
+  --primary-contrast: #ffffff;
+
+  /* depth */
+  --shadow: 0 1px 3px rgba(15, 23, 42, 0.08);
+}
+
+[data-theme='dark'] {
+  --bg: #0f172a; /* deep slate, not pure black */
+  --card-bg: #1e293b; /* card sits slightly lighter than bg */
+  --navigation-bg: #1e293b;
+  --border: #334155;
+
+  --text: #e2e8f0;
+  --text-muted: #94a3b8;
+
+  --primary: #3b82f6; /* a touch brighter so it pops on dark */
+  --primary-contrast: #ffffff;
+
+  --shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
+}
+
+body {
+  margin: 0; /* remove default browser margin so the layout fills the window */
+  background-color: var(--bg);
+  color: var(--text); /* so text follows the theme too */
+  font-family: 'Inter', sans-serif;
+}

@@ -1,11 +1,12 @@
-/**
- * Chart page.
- * @returns {JSX.Element}
- */
+import Header from '../components/Header/Header'
+
+/** Chart route. Nothing plotted yet. */
 export default function ChartPage() {
   return (
     <div>
-      <h1>ChartPage</h1>
+      <Header>
+        <h1>Chart</h1>
+      </Header>
     </div>
   )
 }

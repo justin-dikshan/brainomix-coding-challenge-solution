@@ -1,0 +1,12 @@
+.settings-line-item {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+  color: var(--text);
+  background-color: var(--card-bg);
+  padding: 16px;
+  border-radius: 16px;
+  border: 1px solid var(--border);
+  margin-top: 16px;
+}

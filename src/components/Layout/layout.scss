@@ -1,0 +1,20 @@
+.layout {
+  display: flex;
+  min-height: 100vh;
+}
+
+.left-sidebar {
+  flex: 0 0 220px; // fixed 220px wide, never grows/shrinks
+  display: flex; // (nested flex) to stack the links...
+  flex-direction: column; // ...vertically inside the sidebar
+  gap: 8px; // space between links
+  background: var(--navigation-bg);
+  border-right: 1px solid var(--border); // subtle divider between nav and content
+  padding: 16px;
+}
+
+.right-content {
+  flex: 1;
+  min-width: 0; // let content shrink instead of overflowing
+  padding: 24px;
+}

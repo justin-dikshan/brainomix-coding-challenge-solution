@@ -1,20 +1,32 @@
 .layout {
   display: flex;
   min-height: 100vh;
+
+  @media (max-width: 640px) {
+    flex-direction: column;
+  }
 }
 
 .left-sidebar {
-  flex: 0 0 220px; // fixed 220px wide, never grows/shrinks
-  display: flex; // (nested flex) to stack the links...
-  flex-direction: column; // ...vertically inside the sidebar
-  gap: 8px; // space between links
+  flex: 0 0 220px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
   background: var(--navigation-bg);
-  border-right: 1px solid var(--border); // subtle divider between nav and content
+  border-right: 1px solid var(--border);
   padding: 16px;
+
+  @media (max-width: 640px) {
+    flex: 0 0 auto; // let it size to content
+    flex-direction: row; // links side by side
+    border-right: none;
+    border-bottom: 1px solid var(--border);
+    overflow-x: auto; // scroll if links don't fit
+  }
 }
 
 .right-content {
   flex: 1;
-  min-width: 0; // let content shrink instead of overflowing
+  min-width: 0;
   padding: 24px;
 }

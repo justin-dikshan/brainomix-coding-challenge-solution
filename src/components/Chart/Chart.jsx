@@ -1,77 +1,67 @@
 import { useRef, useEffect } from 'react'
-import { toPx, toPy } from '../../utils/scale'
+import { toPixelX, toPixelY } from '../../utils/scale'
+import { computeMinMax } from '../../utils/computeMinMax'
 
 const PADDING = 40
+const DEFAULT_HEIGHT = 400
 
 /**
- * Clears the canvas and renders the axes, ticks with numeric labels, and each data line.
+ * Clears the canvas and renders the axes and each data series on top.
  * @param {HTMLCanvasElement} canvas - The canvas element to draw on.
- * @param {Array} data - The array of lines (each with color and points).
- * @param {number} WIDTH - CSS width of the canvas in pixels.
- * @param {number} HEIGHT - CSS height of the canvas in pixels.
+ * @param {Array} series - The array of series (each with color and points).
+ * @param {number} width - CSS width of the canvas in pixels.
+ * @param {number} height - CSS height of the canvas in pixels.
  */
-function drawChart(canvas, data, WIDTH, HEIGHT) {
-  const ctx = canvas.getContext('2d')
-  ctx.clearRect(0, 0, WIDTH, HEIGHT)
-  if (!data?.length) return
-  const { minX, maxX, minY, maxY } = computeMinMax(data)
-  drawAxes(ctx, WIDTH, HEIGHT)
-  drawLines(ctx, WIDTH, HEIGHT, data, minX, maxX, minY, maxY)
+function drawChart(canvas, series, width, height) {
+  const context = canvas.getContext('2d')
+  context.clearRect(0, 0, width, height)
+  if (!series?.length) return
+  const bounds = computeMinMax(series)
+  if (!bounds) return
+  drawAxes(context, width, height)
+  drawSeries(context, width, height, series, bounds)
 }
 
 /**
  * Draws the L-shaped chart frame: vertical Y axis on the left, horizontal X axis at the bottom.
- * @param {CanvasRenderingContext2D} ctx - The 2D drawing context.
- * @param {number} WIDTH - CSS width of the canvas in pixels.
- * @param {number} HEIGHT - CSS height of the canvas in pixels.
+ * @param {CanvasRenderingContext2D} context - The 2D drawing context.
+ * @param {number} width - CSS width of the canvas in pixels.
+ * @param {number} height - CSS height of the canvas in pixels.
  */
-function drawAxes(ctx, WIDTH, HEIGHT) {
-  ctx.strokeStyle = '#888'
-  ctx.lineWidth = 1
-  ctx.beginPath()
-  ctx.moveTo(PADDING, PADDING)
-  ctx.lineTo(PADDING, HEIGHT - PADDING)
-  ctx.lineTo(WIDTH - PADDING, HEIGHT - PADDING)
-  ctx.stroke()
+function drawAxes(context, width, height) {
+  context.strokeStyle = '#888'
+  context.lineWidth = 1
+  context.beginPath()
+  context.moveTo(PADDING, PADDING)
+  context.lineTo(PADDING, height - PADDING)
+  context.lineTo(width - PADDING, height - PADDING)
+  context.stroke()
 }
 
 /**
- * Draws each data series as a polyline. Points are sorted by x so unordered input still renders left-to-right.
- * @param {CanvasRenderingContext2D} ctx - The 2D drawing context.
- * @param {number} WIDTH - CSS width of the canvas in pixels.
- * @param {number} HEIGHT - CSS height of the canvas in pixels.
- * @param {Array} data - The array of lines (each with color and points).
- * @param {number} minX - Smallest x in the dataset.
- * @param {number} maxX - Largest x in the dataset.
- * @param {number} minY - Smallest y in the dataset.
- * @param {number} maxY - Largest y in the dataset.
+ * Draws each series as a polyline. Points are sorted by x so unordered input still renders left-to-right.
+ * @param {CanvasRenderingContext2D} context - The 2D drawing context.
+ * @param {number} width - CSS width of the canvas in pixels.
+ * @param {number} height - CSS height of the canvas in pixels.
+ * @param {Array} series - The array of series (each with color and points).
+ * @param {{minX: number, maxX: number, minY: number, maxY: number}} bounds - Data bounds across all series.
  */
-function drawLines(ctx, WIDTH, HEIGHT, data, minX, maxX, minY, maxY) {
-  for (const item of data) {
-    ctx.beginPath()
-    ctx.strokeStyle = item.color
-    const points = [...item.points].sort((a, b) => a.x - b.x)
-    for (const [index, point] of points.entries()) {
-      const x = toPx(point.x, minX, maxX, WIDTH, PADDING)
-      const y = toPy(point.y, minY, maxY, HEIGHT, PADDING)
-      index === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y)
+function drawSeries(context, width, height, series, bounds) {
+  const { minX, maxX, minY, maxY } = bounds
+  for (const line of series) {
+    context.beginPath()
+    context.strokeStyle = line.color
+    // sort defensively — the brief says a different endpoint may be used, and unsorted
+    // points would draw a zig-zag line going backwards instead of a left-to-right polyline
+    const sortedPoints = [...line.points].sort((a, b) => a.x - b.x)
+    for (const [index, point] of sortedPoints.entries()) {
+      const pixelX = toPixelX(point.x, minX, maxX, width, PADDING)
+      const pixelY = toPixelY(point.y, minY, maxY, height, PADDING)
+      // moveTo lifts the pen for the first point; lineTo drags it for every subsequent one
+      index === 0 ? context.moveTo(pixelX, pixelY) : context.lineTo(pixelX, pixelY)
     }
-    ctx.stroke()
+    context.stroke()
   }
-}
-/**
- * Computes the min and max x/y across all points of all lines.
- * @param {Array} items - The array of lines.
- * @returns {{minX: number, maxX: number, minY: number, maxY: number}} The data bounds.
- */
-function computeMinMax(items = []) {
-  if (!items.length) return
-  const allPoints = items.flatMap((item) => item.points)
-  const minX = Math.min(...allPoints.map((point) => point.x))
-  const maxX = Math.max(...allPoints.map((point) => point.x))
-  const minY = Math.min(...allPoints.map((point) => point.y))
-  const maxY = Math.max(...allPoints.map((point) => point.y))
-  return { minX, maxX, minY, maxY }
 }
 
 /**
@@ -81,24 +71,29 @@ function computeMinMax(items = []) {
  * @param {Array} props.data - The series to draw (each with color and points).
  */
 export default function Chart({ data }) {
-  const chartRef = useRef(null)
+  const canvasRef = useRef(null)
 
   useEffect(() => {
-    const canvas = chartRef.current
+    const canvas = canvasRef.current
     if (!canvas) return
     /** Sizes the canvas to its parent (HiDPI-aware) and redraws the chart. */
     const draw = () => {
-      const dpr = window.devicePixelRatio || 1
+      // on retina, 1 CSS pixel = 2 device pixels. Draw into a bitmap that's
+      // `cssSize * dpr`, display at `cssSize`, and scale the context so drawing
+      // commands can keep thinking in CSS pixels — otherwise lines look blurry.
+      const devicePixelRatio = window.devicePixelRatio || 1
       const cssWidth = canvas.parentElement.clientWidth
-      const cssHeight = 400
-      canvas.width = cssWidth * dpr
-      canvas.height = cssHeight * dpr
+      const cssHeight = DEFAULT_HEIGHT
+      canvas.width = cssWidth * devicePixelRatio
+      canvas.height = cssHeight * devicePixelRatio
       canvas.style.width = cssWidth + 'px'
       canvas.style.height = cssHeight + 'px'
-      canvas.getContext('2d').scale(dpr, dpr)
+      canvas.getContext('2d').scale(devicePixelRatio, devicePixelRatio)
       drawChart(canvas, data, cssWidth, cssHeight)
     }
     draw()
+    // observe the parent, not the canvas itself — the canvas size is set imperatively
+    // by `draw`, so observing it would never fire when the window/layout changes.
     const resizeObserver = new ResizeObserver(draw)
     resizeObserver.observe(canvas.parentElement)
 
@@ -107,7 +102,7 @@ export default function Chart({ data }) {
 
   return (
     <div className="chart-container">
-      <canvas ref={chartRef} />
+      <canvas ref={canvasRef} />
     </div>
   )
 }
